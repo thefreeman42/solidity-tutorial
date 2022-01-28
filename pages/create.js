@@ -16,7 +16,7 @@ export default function Home() {
 
   const [mining, setMining] = useState(false);
 
-  const contractAddress = "0xe2b128c7B3Ac9A30A0e610AC90Ac9458326aA97a";
+  const contractAddress = "0x05C2C653A8e09f5461bD1B1fbf5888d5d5ac6EAB";
   const contractAbi = KeyboardsContractJson.abi;
 
   const handleAccounts = (accounts) => {

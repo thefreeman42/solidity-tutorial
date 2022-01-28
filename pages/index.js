@@ -3,19 +3,18 @@ import { ethers } from "ethers";
 import PrimaryButton from "../components/primary-button";
 import KeyboardsContractJson from "../utils/Keyboards.json";
 import Keyboard from "../components/keyboard";
+import addressesEqual from "../utils/addressesEqual";
+import { UserCircleIcon } from "@heroicons/react/solid";
+import TipButton from "../components/tip-button";
 
 export default function Home() {
   const [ethereum, setEthereum] = useState(undefined);
   const [connectedAccount, setConnectedAccount] = useState(undefined);
   const [keyboards, setKeyboards] = useState([]);
 
-  const [keyboardLayout, setKeyboardLayout] = useState(0);
-  const [isPBT, setIsPBT] = useState(false);
-  const [filter, setFilter] = useState("");
-
   const [keyboardsLoading, setKeyboardsLoading] = useState(false);
 
-  const contractAddress = "0xe2b128c7B3Ac9A30A0e610AC90Ac9458326aA97a";
+  const contractAddress = "0x05C2C653A8e09f5461bD1B1fbf5888d5d5ac6EAB";
   const contractAbi = KeyboardsContractJson.abi;
 
   const handleAccounts = (accounts) => {
@@ -83,14 +82,24 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-4">
+      <p>{connectedAccount}</p>
       <PrimaryButton type="link" href="/create">
         Create a Keyboard!
       </PrimaryButton>
       {keyboardsLoading && <p>Loading Keyboards...</p>}
       {keyboards.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
-          {keyboards.map(([layout, isPBT, filter], i) => (
-            <Keyboard key={i} kind={layout} isPBT={isPBT} filter={filter} />
+          {keyboards.map(([layout, isPBT, filter, owner], i) => (
+            <div key={i} className="relative">
+              <Keyboard kind={layout} isPBT={isPBT} filter={filter} />
+              <span className="absolute top-1 right-6">
+                {addressesEqual(owner, connectedAccount) ? (
+                  <UserCircleIcon className="h-5 w-5 text-indigo-100" />
+                ) : (
+                  <TipButton ethereum={ethereum} index={i} />
+                )}
+              </span>
+            </div>
           ))}
         </div>
       ) : (

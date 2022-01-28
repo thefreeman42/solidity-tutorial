@@ -13,6 +13,7 @@ contract Keyboards {
     KeyboardLayout layout;
     bool isPbt;
     string filter;
+    address owner;
   }
 
   Keyboard[] public createdKeyboards;
@@ -29,12 +30,14 @@ contract Keyboards {
     Keyboard memory newKb = Keyboard({
       layout: _layout,
       isPbt: _isPbt,
-      filter: _filter
+      filter: _filter,
+      owner: msg.sender
     });
     createdKeyboards.push(newKb);
   }
 
-  // function create(Keyboard calldata _kb) external {
-  //   createdKeyboards.push(_kb);
-  // }
+  function tip(uint256 _ix) external payable {
+    address payable owner = payable(createdKeyboards[_ix].owner);
+    owner.transfer(msg.value);
+  }
 }
