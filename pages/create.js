@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { ethers } from "ethers";
 import PrimaryButton from "../components/primary-button";
-import KeyboardsContractJson from "../utils/Keyboards.json";
 import Keyboard from "../components/keyboard";
 import Router from "next/router";
+import { useMetaMaskAccount } from "../components/etherum-context";
+import getContract from "../utils/getContract";
 
 export default function Home() {
-  const [ethereum, setEthereum] = useState(undefined);
-  const [connectedAccount, setConnectedAccount] = useState(undefined);
+  const { ethereum, connectedAccount, connectAccount } = useMetaMaskAccount();
   const [keyboards, setKeyboards] = useState([]);
 
   const [keyboardLayout, setKeyboardLayout] = useState(0);
@@ -16,54 +15,16 @@ export default function Home() {
 
   const [mining, setMining] = useState(false);
 
-  const contractAddress = "0x05C2C653A8e09f5461bD1B1fbf5888d5d5ac6EAB";
-  const contractAbi = KeyboardsContractJson.abi;
-
-  const handleAccounts = (accounts) => {
-    if (accounts.length > 0) {
-      const account = accounts[0];
-      console.log("We have an authorized account: ", account);
-      setConnectedAccount(account);
-    } else {
-      console.log("No authorized accounts yet");
-    }
-  };
-
-  const connectMetaMaskAccount = async (method) => {
-    const accounts = await ethereum.request({ method });
-    handleAccounts(accounts);
-  };
-
-  const initMetaMask = () => {
-    if (window.ethereum) setEthereum(window.ethereum);
-    if (ethereum) connectMetaMaskAccount("eth_accounts");
-  };
-  useEffect(() => initMetaMask(), []);
-
-  const connectAccount = () => {
-    if (!ethereum) {
-      alert("MetaMask is required to connect an account");
-      return;
-    }
-    connectMetaMaskAccount("eth_requestAccounts");
-  };
+  const keyboardsContract = getContract(ethereum);
 
   const getKeyboards = async () => {
     if (!ethereum || !connectedAccount) return;
-
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    const signer = provider.getSigner();
-    const keyboardsContract = new ethers.Contract(
-      contractAddress,
-      contractAbi,
-      signer
-    );
 
     const keyboardsOnContract = await keyboardsContract.getKeyboards();
     console.log("Retrieved keyboards...", keyboardsOnContract);
     setKeyboards(keyboardsOnContract);
   };
-  useEffect(() => getKeyboards(), [connectedAccount]);
+  useEffect(() => getKeyboards(), [!!keyboardsContract, connectedAccount]);
 
   const submitCreate = async (e) => {
     e.preventDefault();
@@ -75,14 +36,6 @@ export default function Home() {
 
     setMining(true);
     try {
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      const signer = provider.getSigner();
-      const keyboardsContract = new ethers.Contract(
-        contractAddress,
-        contractAbi,
-        signer
-      );
-
       const createTxn = await keyboardsContract.create(
         keyboardLayout,
         isPBT,

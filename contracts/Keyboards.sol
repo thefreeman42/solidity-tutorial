@@ -16,6 +16,14 @@ contract Keyboards {
     address owner;
   }
 
+  event KeyboardCreated (
+    Keyboard keyboard
+  );
+  event TipSent (
+    address recipient,
+    uint256 amount
+  );
+
   Keyboard[] public createdKeyboards;
 
   function getKeyboards() view public returns(Keyboard[] memory) {
@@ -34,10 +42,12 @@ contract Keyboards {
       owner: msg.sender
     });
     createdKeyboards.push(newKb);
+    emit KeyboardCreated(newKb);
   }
 
   function tip(uint256 _ix) external payable {
     address payable owner = payable(createdKeyboards[_ix].owner);
     owner.transfer(msg.value);
+    emit TipSent(owner, msg.value);
   }
 }
